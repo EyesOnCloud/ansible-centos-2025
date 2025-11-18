@@ -1,6 +1,6 @@
 ---
 - name: Deploying some Packages
-  hosts: webserver
+  hosts: webservers
   become: yes
   vars:
     web_pkg: httpd
