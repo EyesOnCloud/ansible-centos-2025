@@ -14,4 +14,4 @@
     - name: Add custom content to Nginx index.html
       ansible.builtin.copy:
         content: "Implementing multiple play!\n"
-        dest: /var/www/html/index.html
+        dest: /usr/share/nginx/html/index.html
