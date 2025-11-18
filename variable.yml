@@ -48,5 +48,5 @@
   tasks:
     - name: Ensure the webserver is reachable
       ansible.builtin.uri:
-        url: http://eoc-node1
+        url: http://eoc-node3
         status_code: 200
