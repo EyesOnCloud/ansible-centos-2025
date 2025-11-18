@@ -10,5 +10,5 @@
         src: motd.j2
         dest: /etc/motd
         owner: admin
-        group: sudo
+        group: wheel
         mode: 0664
