@@ -1,0 +1,8 @@
+- name: Enable and start Apache2 service on ubuntu web servers
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Start service httpd, if not started
+      ansible.builtin.service:
+        name: httpd
+        state: started
