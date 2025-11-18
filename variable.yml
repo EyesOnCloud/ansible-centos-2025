@@ -1,6 +1,6 @@
 ---
 - name: Deploying some Packages
-  hosts: eoc-node1
+  hosts: webserver
   become: yes
   vars:
     web_pkg: httpd
