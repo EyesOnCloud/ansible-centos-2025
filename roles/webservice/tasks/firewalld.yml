@@ -1,0 +1,7 @@
+---
+- name: Add an exception in the firewall
+  firewalld:
+    service: "{{ httpd_rule }}"
+    permanent: true
+    immediate: true
+    state: enabled
