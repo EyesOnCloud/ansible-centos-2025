@@ -1,0 +1,87 @@
+---
+- name: Install Apache + PHP and deploy single-file PHP app 
+  hosts: webserver
+  become: yes
+  vars:
+    index_path: /var/www/html/index.php
+    success_marker: "APPLICATION_INSTALL_SUCCESS"
+
+    db_host: "192.168.100.151"
+    db_name: "lampdb"
+    db_user: "lampuser"
+    db_password: "lamppass"
+
+    php_pkg: "php"
+    php_mysql_pkg: "php-mysqlnd"
+    php_apache_pkg: "php-cli"
+
+  tasks:
+
+    - name: Install Apache + PHP + PHP MySQL
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - "{{ php_pkg }}"
+          - "{{ php_mysql_pkg }}"
+          - "{{ php_apache_pkg }}"
+        state: present
+
+    - name: Remove default Apache index.html (if present)
+      ansible.builtin.file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: Ensure httpd is started and enabled
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy index.php with DB connection and success marker
+      ansible.builtin.copy:
+        dest: "{{ index_path }}"
+        content: |
+          <?php
+          $db_host = "{{ db_host }}";
+          $db_user = "{{ db_user }}";
+          $db_pass = "{{ db_password }}";
+          $db_name = "{{ db_name }}";
+
+          function show($s){ echo htmlspecialchars($s); }
+
+          echo "<!doctype html><html><head><meta charset='utf-8'><title>Simple LAMP App</title></head><body>";
+          echo "<h1>Simple LAMP App</h1>";
+          echo "<p>Server date/time: " . date('Y-m-d H:i:s') . "</p>";
+
+          $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+          if ($conn->connect_error) {
+              echo "<div style='color:red;'>Database connection failed: " . htmlspecialchars($conn->connect_error) . "</div>";
+          } else {
+              $result = @$conn->query("SELECT NOW()");
+              if ($result) {
+                  $row = $result->fetch_row();
+                  echo "<div style='color:green;'>Connected to MySQL at " . show($db_host) . "</div>";
+                  echo "<p>" . show($row[0]) . "</p>";
+                  $result->free();
+              } else {
+                  echo "<div style='color:orange;'>DB connected but query failed.</div>";
+              }
+              $conn->close();
+          }
+          echo "<div>Application installed successfully — APPLICATION_INSTALL_SUCCESS</div>";
+          echo "</body></html>";
+        owner: apache
+        group: apache
+        mode: '0644'
+      notify: Restart httpd
+
+    - name: Reload Apache to apply changes
+      ansible.builtin.service:
+        name: httpd
+        state: reloaded
+
+  handlers:
+    - name: Restart httpd
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
