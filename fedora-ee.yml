@@ -23,6 +23,3 @@
         owner: nginx
         group: nginx
         mode: '0644'
-
-    - name: Show Ansible version inside EE
-      ansible.builtin.command: ansible --version
