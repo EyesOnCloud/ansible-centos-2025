@@ -1,0 +1,26 @@
+---
+- name: Health check webservers
+  hosts: webserver
+  gather_facts: no
+  tasks:
+    - name: Check HTTP response and content
+      uri:
+        url: "http://{{ inventory_hostname }}/"
+        return_content: yes
+        status_code: 200
+        timeout: 10
+      register: web_resp
+      retries: 3
+      delay: 5
+      until: web_resp.status == 200
+
+    - name: Assert success marker present
+      assert:
+        that:
+          - "'APPLICATION_INSTALL_SUCCESS' in web_resp.content"
+        fail_msg: "Web page on {{ inventory_hostname }} does not contain success marker."
+        success_msg: "Health check passed on {{ inventory_hostname }}"
+
+    - name: Show server response (short)
+      debug:
+        msg: "Host {{ inventory_hostname }} returned status={{ web_resp.status }}; content sample={{ web_resp.content[:120] }}"
