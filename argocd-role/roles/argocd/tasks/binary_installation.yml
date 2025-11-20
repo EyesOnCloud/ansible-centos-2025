@@ -3,7 +3,3 @@
     url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
     dest: /usr/local/bin/argocd
     mode: '0755'
-- name: Remove temp argocd binary
-  ansible.builtin.file:
-    path: ~/argocd-linux-amd64
-    state: absent
