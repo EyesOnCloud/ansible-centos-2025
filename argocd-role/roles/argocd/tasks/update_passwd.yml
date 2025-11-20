@@ -2,24 +2,16 @@
   pause:
     seconds: 30
     
-- name: Get Argo CD initial admin secret via k8s_info
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Secret
-    name: argocd-initial-admin-secret
-    namespace: argocd
-  register: argocd_secret
-
-- name: Set Argo CD admin password fact
-  ansible.builtin.set_fact:
-    argo_password: >-
-      {{
-        argocd_secret.resources[0].data.password
-        | b64decode
-      }}
+- name: Get the initial password of the argocd
+  shell:  /usr/local/bin/argocd admin initial-password -n argocd
+  register: argo_passwd_output
+  
+- name: Store the password in a variable
+  set_fact:
+    argo_password: "{{ argo_passwd_output.stdout_lines[0] }}"
     
 - name: Login into argo-cd
-  shell: argocd login 192.168.100.150:32000 --username admin --password {{ argo_password }} --insecure
+  shell:  /usr/local/bin/argocd login 192.168.100.150:32000 --username admin --password {{ argo_password }} --insecure
   
 - name: Update the password
-  shell: argocd account update-password --current-password {{ argo_password }} --new-password Welcome@123 --insecure
+  shell:  /usr/local/bin/argocd account update-password --current-password {{ argo_password }} --new-password Welcome@123 --insecure
