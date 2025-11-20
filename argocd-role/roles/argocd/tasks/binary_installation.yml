@@ -1,11 +1,14 @@
 - name: Download argocd-linux-amd64 binary
   ansible.builtin.get_url:
     url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
-    dest: "~/argocd-linux-amd64"
-    mode: "0755"
+    dest: /tmp/argocd-linux-amd64
+    mode: '0755'
 - name: Install argocd-linux-amd64 binary
-  shell: install -m 555 ~/argocd-linux-amd64 /usr/local/bin/argocd
-- name: Remove argocd-linux-amd64 binary
+  ansible.builtin.command: >
+    install -m 0755 /tmp/argocd-linux-amd64 /usr/local/bin/argocd
+  args:
+    creates: /usr/local/bin/argocd
+- name: Remove temp argocd binary
   ansible.builtin.file:
-    path: "~/argocd-linux-amd64"
+    path: /tmp/argocd-linux-amd64
     state: absent
