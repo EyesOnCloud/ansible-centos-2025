@@ -1,0 +1,8 @@
+---
+- import_tasks: create_ns.yml
+- import_tasks: install_argo.yml
+- import_tasks: binary_installation.yml
+- import_tasks: csvc.yml
+- import_tasks: update_passwd.yml
+- import_tasks: set_context.yml
+- import_tasks: netpol.yml
