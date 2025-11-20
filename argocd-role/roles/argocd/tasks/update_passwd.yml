@@ -1,0 +1,17 @@
+- name: Wait for 30 seconds before getting initial password
+  pause:
+    seconds: 30
+    
+- name: Get the initial password of the argocd
+  shell: argocd admin initial-password -n argocd
+  register: argo_passwd_output
+  
+- name: Store the password in a variable
+  set_fact:
+    argo_password: "{{ argo_passwd_output.stdout_lines[0] }}"
+    
+- name: Login into argo-cd
+  shell: argocd login 192.168.100.150:32000 --username admin --password {{ argo_password }} --insecure
+  
+- name: Update the password
+  shell: argocd account update-password --current-password {{ argo_password }} --new-password Welcome@123 --insecure
