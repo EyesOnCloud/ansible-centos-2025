@@ -1,6 +1,6 @@
 - name: Wait for 30 seconds before getting initial password
   pause:
-    seconds: 30
+    seconds: 60
     
 - name: Get the initial password of the argocd
   shell:  /usr/local/bin/argocd admin initial-password -n argocd
