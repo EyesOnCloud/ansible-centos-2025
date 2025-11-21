@@ -1,4 +1,3 @@
----
 - name: Install Apache + PHP and deploy single-file PHP app 
   hosts: webserver
   become: yes
@@ -11,20 +10,18 @@
     db_user: "lampuser"
     db_password: "lamppass"
 
-    php_pkg: "php"
-    php_mysql_pkg: "php-mysqlnd"
-    php_apache_pkg: "php-cli"
-
   tasks:
 
-    - name: Install Apache + PHP + PHP MySQL
+    - name: Install Apache + PHP + MySQL extension
       ansible.builtin.dnf:
         name:
           - httpd
-          - "{{ php_pkg }}"
-          - "{{ php_mysql_pkg }}"
-          - "{{ php_apache_pkg }}"
+          - php
+          - php-cli
+          - php-mysqlnd    
+          - php-mysqli    
         state: present
+      ignore_errors: yes   
 
     - name: Remove default Apache index.html (if present)
       ansible.builtin.file:
@@ -42,33 +39,46 @@
         dest: "{{ index_path }}"
         content: |
           <?php
+          error_reporting(E_ALL);
+          ini_set('display_errors', 1);
+
           $db_host = "{{ db_host }}";
           $db_user = "{{ db_user }}";
           $db_pass = "{{ db_password }}";
           $db_name = "{{ db_name }}";
 
-          function show($s){ echo htmlspecialchars($s); }
+          function show($s){ return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 
           echo "<!doctype html><html><head><meta charset='utf-8'><title>Simple LAMP App</title></head><body>";
           echo "<h1>Simple LAMP App</h1>";
           echo "<p>Server date/time: " . date('Y-m-d H:i:s') . "</p>";
 
+          if (!extension_loaded('mysqli')) {
+              http_response_code(500);
+              echo "<div style='color:red;'>PHP mysqli extension is not loaded.</div>";
+              echo "</body></html>";
+              exit;
+          }
+
           $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
           if ($conn->connect_error) {
-              echo "<div style='color:red;'>Database connection failed: " . htmlspecialchars($conn->connect_error) . "</div>";
+              http_response_code(500);
+              echo "<div style='color:red;'>Database connection failed: " . show($conn->connect_error) . "</div>";
           } else {
               $result = @$conn->query("SELECT NOW()");
               if ($result) {
                   $row = $result->fetch_row();
                   echo "<div style='color:green;'>Connected to MySQL at " . show($db_host) . "</div>";
-                  echo "<p>" . show($row[0]) . "</p>";
+                  echo "<p>DB Time: " . show($row[0]) . "</p>";
                   $result->free();
+                  echo "<div>Application installed successfully — APPLICATION_INSTALL_SUCCESS</div>";
               } else {
+                  http_response_code(500);
                   echo "<div style='color:orange;'>DB connected but query failed.</div>";
               }
               $conn->close();
           }
-          echo "<div>Application installed successfully — APPLICATION_INSTALL_SUCCESS</div>";
+
           echo "</body></html>";
         owner: apache
         group: apache
