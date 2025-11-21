@@ -1,6 +1,7 @@
+---
 - name: Install Nginx on eoc-node2
   hosts: eoc-node2
-  become: yes
+  become: true
   tasks:
     - name: Install nginx package
       ansible.builtin.dnf:
