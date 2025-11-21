@@ -1,3 +1,4 @@
+---
 - name: Create /tmp/foo on eoc-node1
   hosts: eoc-node1
   become: yes
