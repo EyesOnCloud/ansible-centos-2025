@@ -1,6 +1,6 @@
 ---
 - name: Schedule a cron job for natasha
-  hosts: cronservers
+  hosts: eoc-node2
   become: yes
   tasks:
     - name: Schedule cron job for admin
