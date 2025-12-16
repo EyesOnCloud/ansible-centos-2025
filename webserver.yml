@@ -4,7 +4,7 @@
   become: yes
   tasks:
     - name: Install NGINX (RedHat/CentOS)
-      Ansible.builtin.dnf:
+      ansible.builtin.dnf:
         name: nginx
         state: present
     - name: Deploy custom index.html
@@ -22,7 +22,7 @@
         group: nginx
         mode: '0644'
     - name: Ensure NGINX is enabled and started
-      Ansible.builtin.service:
+      ansible.builtin.service:
         name: nginx
         state: started
         enabled: yes
