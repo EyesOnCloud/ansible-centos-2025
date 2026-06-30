@@ -1,6 +1,6 @@
 ---
 - name: Install NGINX and deploy custom content
-  hosts: all
+  hosts: webservers
   become: yes
   tasks:
     - name: Install NGINX (RedHat/CentOS)
